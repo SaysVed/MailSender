@@ -1,55 +1,53 @@
-const express = require('express');
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import startEmail from "./Mailer.js";
+import fs from "fs";
+import qr from "qrcode";
+
 const app = express();
 
-const cors = require('cors');
-require('dotenv').config();
+dotenv.config();
 app.use(cors());
-app.options('*', cors());
+app.options("*", cors());
 
-const nodemailer = require('nodemailer');
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL,
-    pass: process.env.PASSWORD,
-  },
-});
+const port = process.env.PORT;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.get('/sendEmails', (req, res) => {
-  res.send('Hello World!');
-});
+var rawData = fs.readFileSync("dataList.json");
+var data = JSON.parse(rawData);
 
-app.get('/start', async (req, res) => {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL,
-      pass: process.env.PASSWORD,
-    },
-  });
-  const mailOptions = {
-    from: process.env.EMAIL,
-    to: 'adityasinghmoni@gmail.com',
-    subject: 'Sending Email using Node.js',
-    text: 'That was easy!',
-  };
-  transporter.sendMail(mailOptions, function (error, info) {
-    if (error) {
-      console.log(error);
-      res.send('error');
-    } else {
-      console.log('Email sent: ' + info.response);
-      res.send('Email sent: ' + info.response);
+app.get("/start", async (req, res) => {
+  try {
+    // Function to generate a QR code as a data URL
+    for (const element of data) {
+      if (element.regNo) {
+        const qrCode = await qr.toDataURL(element.regNo); // Await here
+        var base64Data = qrCode.replace(/^data:image\/png;base64,/, "");
+        fs.writeFile(
+          `QrCodes/${element.regNo}.png`,
+          base64Data,
+          "base64",
+          function (err) {
+            if (err) {
+              console.log(err);
+            }
+          }
+        );
+      }
     }
-  });
 
-
+    await startEmail();
+    res.json({ message: "Emails sent successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 });
 
 
 app.listen(process.env.PORT, () => {
-  console.log(`Server is running on port ${process.env.PORT}`);
+  console.log(`Server is running on port ${port}`);
 });
