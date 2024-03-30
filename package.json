@@ -1,0 +1,21 @@
+{
+  "name": "mailsender",
+  "version": "1.0.0",
+  "description": "This project is a sub_part of the parent project of Event Manager for AWS Cloud Club LPU",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.2.4",
+    "nodemailer": "^6.9.13",
+    "nodemon": "^3.1.0"
+  }
+}
